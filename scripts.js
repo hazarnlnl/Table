@@ -3,28 +3,14 @@ const urlInput = document.getElementById('urlInput');
 const addUrlBtn = document.getElementById('addUrlBtn');
 const linkList = document.getElementById('linkList');
 
-// Function to extract title from URL
-async function getLinkTitle(url) {
+// Function to get a simple title from URL
+function getLinkTitle(url) {
     try {
-        // Fallback method to get a meaningful title
         const hostname = new URL(url).hostname;
         const cleanHostname = hostname.replace('www.', '');
-        
-        // Try to fetch title using a proxy (note: this might not always work)
-        try {
-            const response = await fetch(`${url}`);
-            const data = await response.json();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-            const title = doc.querySelector('title')?.textContent;
-
-            return title || `Link from ${cleanHostname}`;
-        } catch (proxyError) {
-            // If proxy fails, return a default title
-            return `Link from ${cleanHostname}`;
-        }
+        return `Link from ${cleanHostname}`;
     } catch (error) {
-        console.error('Could not fetch title:', error);
+        console.error('Could not parse URL:', error);
         return 'Untitled Link';
     }
 }
@@ -39,7 +25,7 @@ function createLinkCard(url) {
     
     const link = document.createElement('a');
     link.href = validUrl;
-    link.textContent = 'Loading...';
+    link.textContent = getLinkTitle(validUrl);
     link.target = '_blank';
     
     const deleteBtn = document.createElement('button');
@@ -53,21 +39,7 @@ function createLinkCard(url) {
     card.appendChild(link);
     card.appendChild(deleteBtn);
     
-    // Update title in the background without waiting
-    updateLinkTitle(link, validUrl);
-    
     return card;
-}
-
-// Separate function to update link title
-async function updateLinkTitle(link, url) {
-    try {
-        const title = await getLinkTitle(url);
-        link.textContent = title;
-    } catch (error) {
-        console.error('Could not fetch title:', error);
-        link.textContent = 'Untitled Link';
-    }
 }
 
 // Add link when button is clicked
